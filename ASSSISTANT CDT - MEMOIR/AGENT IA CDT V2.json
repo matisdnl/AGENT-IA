@@ -1,0 +1,420 @@
+{
+  "name": "AGENT IA CDT V2",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -16,
+        64
+      ],
+      "id": "e4575a73-e417-4aa8-94c9-f249f1b1d262",
+      "name": "Chat — message reçu",
+      "webhookId": "94c9569f-5ea5-40ff-840d-0f27708de9c5"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -16,
+        -144
+      ],
+      "id": "52c81fd5-3c08-43bc-991f-cd8e6b563b8a",
+      "name": "Trigger auto — toutes les 15 min"
+    },
+    {
+      "parameters": {
+        "content": "## Merge des triggers\nCe nœud fusionne le trigger manuel (chat) et le trigger automatique (15 min) pour alimenter le même agent.",
+        "height": 120,
+        "width": 300
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        320
+      ],
+      "id": "834a73ce-ed15-418b-b719-20fc6c7d7a9a",
+      "name": "Note — Triggers"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "Tu es l'assistant IA personnel de Matis DENOUAL, Conducteur de Travaux BTP chez Bouygues Construction.\n\nTON RÔLE :\nTu gères la boîte mail professionnelle Outlook de Matis, analyses les emails, prépares des réponses et des documents, mets à jour le planning et les tâches dans Notion, et aides Matis à prioriser son travail.\n\nCHANTIERS ACTIFS :\n- Chantier A : \"Résidence Les Acacias\" - Bordeaux (33) - Logements collectifs R+4\n- Chantier B : \"Extension Centre Commercial Mérignac\" - Mérignac (33) - Commerces/bureaux\n(D'autres chantiers peuvent exister, demande à Matis si besoin)\n\nCAPACITÉS :\n1. LIRE les emails Outlook (outil : Get Outlook Messages)\n2. ENVOYER des emails Outlook après validation explicite (outil : Send Outlook Message)\n3. LIRE la base Notion Suivi Emails (outil : Notion - Lire Emails)\n4. CRÉER une page dans Notion Tâches (outil : Notion - Créer Tâche)\n5. METTRE À JOUR une page Notion existante (outil : Notion - Mettre à jour)\n6. LIRE la base Notion Planning (outil : Notion - Lire Planning)\n7. CRÉER un événement dans Notion Planning (outil : Notion - Créer Événement Planning)\n8. PRÉPARER des brouillons de réponse pour validation\n\nWORKFLOW AUTOMATIQUE (déclenché toutes les 15 min) :\n1. Lire les 20 derniers emails non traités dans Outlook\n2. Pour chaque email : analyser, catégoriser, extraire les tâches et deadlines\n3. Créer les tâches correspondantes dans Notion (base Tâches)\n4. Préparer un brouillon de réponse si nécessaire et l'enregistrer dans Notion (base Emails) avec statut BROUILLON\n5. Si une date/RDV est détectée, créer l'événement dans Notion Planning\n6. NE JAMAIS envoyer un email automatiquement — toujours attendre la validation de Matis\n\nCATÉGORIES D'EMAIL :\n- URGENT : action requise dans les 24h, impact chantier direct\n- RELANCE_A_FAIRE : document manquant, pas de réponse depuis >48h\n- ACTION_REQUISE : tâche à accomplir, délai >24h\n- REUNION : invitation ou confirmation de réunion / visite\n- INFO : information sans action requise\n- ADMINISTRATIF : accès sous-traitant, habilitation, DICT, PPSPS\n- FINANCIER : avenant, dépassement budget, facture\n- GROUPEMENT : mail destiné aux entreprises du même groupement\n\nPRIORITÉ DES TÂCHES (champ Priorité dans Notion) :\n- URGENTE : deadline aujourd'hui ou impact bloquant chantier\n- HAUTE : deadline cette semaine ou dépendance sous-traitant\n- NORMALE : deadline semaine prochaine\n- BASSE : pas de deadline définie\n\nCOMPORTEMENT EN MODE CHAT :\n- Toujours présenter un brouillon de mail AVANT d'envoyer, et attendre la validation de Matis\n- Si Matis dit \"envoie\" ou \"c'est bon\" ou \"ok\" → envoyer avec Send Outlook Message\n- Si Matis dit \"modifie...\" → modifier d'abord, re-proposer, puis attendre validation\n- Si Matis dit \"rajoute [info] dans [tâche]\" → mettre à jour la page Notion correspondante\n- Proposer les tâches par ordre de priorité (deadline + urgence)\n- Toujours répondre en français, ton professionnel BTP\n\nRÈGLES IMPORTANTES :\n- Ne jamais envoyer un email sans validation explicite de Matis (\"envoie\", \"c'est bon\", \"ok envoie\")\n- Si tu manques d'informations (chantier, interlocuteur...), demande à Matis\n- Pour les avenants ou documents : prépare le contenu et demande confirmation avant de créer dans Notion\n- Toujours indiquer le chantier concerné dans chaque tâche et événement Notion\n- Quand tu crées une tâche depuis un email, inclure l'ID de l'email source dans le champ Email_Source"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        320,
+        -48
+      ],
+      "id": "5e316af1-4d87-4c4c-9f6d-3c8a1ad30241",
+      "name": "AI Agent CDT v2"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        240,
+        176
+      ],
+      "id": "7f66ac79-c838-4c98-a3e3-1d3baa5699c9",
+      "name": "OpenAI GPT-4o",
+      "credentials": {
+        "openAiApi": {
+          "id": "v7e5Zdrweaa8u4oi",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 30
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        416,
+        176
+      ],
+      "id": "af6d6064-bfde-4e02-92d1-9466dc557284",
+      "name": "Mémoire conversationnelle (30 msg)"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 20,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        720,
+        -96
+      ],
+      "id": "3e408b37-a088-4a11-8719-47848aedd409",
+      "name": "Outlook — Lire nouveaux mails (20)",
+      "webhookId": "f9fd59cc-0a53-4018-9010-7dd018aff929",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "Iw8OpUCH8XDPpwRe",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toRecipients": "={{ $fromAI('to', 'Adresse email du destinataire') }}",
+        "subject": "={{ $fromAI('subject', 'Objet du mail') }}",
+        "bodyContent": "={{ $fromAI('body', 'Corps du mail en HTML ou texte') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        720,
+        128
+      ],
+      "id": "7d6332f2-a98f-45d8-80bc-f72aad30df39",
+      "name": "Outlook — Envoyer mail (après validation)",
+      "webhookId": "c48204c3-7085-464d-8ff5-ed195d19badb",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "Iw8OpUCH8XDPpwRe",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "value": "37a31a6d-50b2-8001-af9d-cca976298eb8",
+          "mode": "list",
+          "cachedResultName": "🏗️ Agent CDT - Suivi Emails",
+          "cachedResultUrl": "https://app.notion.com/p/37a31a6d50b28001af9dcca976298eb8"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notionTool",
+      "typeVersion": 2.2,
+      "position": [
+        912,
+        -96
+      ],
+      "id": "ff2e4611-587d-4c77-a502-934cea316f20",
+      "name": "Notion — Lire Suivi Emails",
+      "credentials": {
+        "notionApi": {
+          "id": "0WtyyFAVryldpRpW",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": "={{ $fromAI('page_id', 'ID de la page Notion à mettre à jour') }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Statut",
+              "selectValue": "={{ $fromAI('nouveau_statut', 'Nouveau statut : À faire, En cours, En attente validation, Envoyé, Terminé') }}"
+            },
+            {
+              "key": "Brouillon_Mail"
+            },
+            {
+              "key": "Notes"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notionTool",
+      "typeVersion": 2.2,
+      "position": [
+        1088,
+        -96
+      ],
+      "id": "db7ab6f3-3016-4f2e-b18b-1ca0fe2944a0",
+      "name": "Notion — Mettre à jour page",
+      "credentials": {
+        "notionApi": {
+          "id": "0WtyyFAVryldpRpW",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "value": "37c31a6d50b28022a6a6e1ed6a3fc712",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notionTool",
+      "typeVersion": 2.2,
+      "position": [
+        912,
+        128
+      ],
+      "id": "f552bb5d-02f5-4f83-a158-df8838641d29",
+      "name": "Notion — Lire Planning",
+      "credentials": {
+        "notionApi": {
+          "id": "0WtyyFAVryldpRpW",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "=37c31a6d50b28022a6a6e1ed6a3fc712",
+          "mode": "id"
+        },
+        "title": "={{ $fromAI('titre_evenement', 'Titre de l événement ou intervention') }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "=Date",
+              "date": "={{ $fromAI('date_evenement', 'Date de l\\'\\u00e9v\\u00e9nement au format YYYY-MM-DD, ex: 2024-12-25') }}"
+            },
+            {
+              "key": "Heure",
+              "textContent": "={{ $fromAI('heure_evenement', 'Heure de début de l\\'événement au format HH:MM, ex: 09:30') }}"
+            },
+            {
+              "key": "Type",
+              "selectValue": "={{ $fromAI('type_evenement', 'REUNION, INTERVENTION, VISITE, LIVRAISON, ADMINISTRATIF') }}"
+            },
+            {
+              "key": "Chantier",
+              "selectValue": "={{ $fromAI('chantier', 'Résidence Les Acacias ou Extension Centre Commercial Mérignac') }}"
+            },
+            {
+              "key": "=Intervenants",
+              "textContent": "={{ $fromAI('intervenants', 'Nom(s) des intervenants ou personnes concernées, ex: Jean Dupont, Marie Martin') }}"
+            },
+            {
+              "key": "Notes"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notionTool",
+      "typeVersion": 2.2,
+      "position": [
+        1264,
+        -96
+      ],
+      "id": "d71463ee-bfdc-4d74-99aa-d69b35aac901",
+      "name": "Notion — Créer Événement Planning",
+      "credentials": {
+        "notionApi": {
+          "id": "0WtyyFAVryldpRpW",
+          "name": "Notion account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Chat — message reçu": {
+      "main": [
+        [
+          {
+            "node": "AI Agent CDT v2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger auto — toutes les 15 min": {
+      "main": [
+        [
+          {
+            "node": "AI Agent CDT v2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI GPT-4o": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent CDT v2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mémoire conversationnelle (30 msg)": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent CDT v2",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Outlook — Lire nouveaux mails (20)": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent CDT v2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Outlook — Envoyer mail (après validation)": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent CDT v2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion — Lire Suivi Emails": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent CDT v2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion — Mettre à jour page": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent CDT v2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion — Lire Planning": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent CDT v2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion — Créer Événement Planning": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent CDT v2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "4be4e6a8-baae-41a8-8405-8ec920f2a6ef",
+  "meta": {
+    "instanceId": "c14a32418cd257639efb46cf34ec9ba6775275cacefba61d4513005a1dcdd3c6"
+  },
+  "nodeGroups": [],
+  "id": "S4xSjXA7kD1rlmrN",
+  "tags": []
+}
